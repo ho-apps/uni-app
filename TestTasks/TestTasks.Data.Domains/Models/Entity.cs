@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace TestTasks.Data.Domains.Entities
+namespace TestTasks.Data.Domains.Models
 {
     public class Entity
     {

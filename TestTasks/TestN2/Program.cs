@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
+using TestTasks.Data.Domains;
 
 namespace TestN2
 {
@@ -6,9 +9,20 @@ namespace TestN2
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            // instantiate DI and configure logger
+            var serviceProvider = new ServiceCollection()
+                .AddLogging(cfg => cfg.AddConsole()).Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Information)
+                .AddTransient<EntityDataProvider>()
+                .BuildServiceProvider();
 
-            Console.WriteLine("Для завершения работы программы нажмите <Enter>...");
+            // get instance of logger
+            var logger = serviceProvider.GetService<ILogger<Program>>();
+
+            logger.LogWarning($"Внимание! Запущен процесс...");
+
+            
+            logger.LogInformation($"Для завершения работы программы нажмите <Enter>...");
+
             Console.ReadLine();
         }
     }
