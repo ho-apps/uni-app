@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using TestN1.Infrastructure;
-using TestN1.Middleware;
 using TestTasks.Data.Domains;
 
 namespace TestN1
@@ -46,8 +45,7 @@ namespace TestN1
             services.AddMvc(options => { options.Filters.Add(typeof(HttpServiceExceptionFilter)); })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddTransient<EntityDataProvider>()
-                .AddTransient<DataMiddleware>();
+            services.AddTransient<EntityDataProvider>();
             services.AddOptions();
 
             services.AddSingleton(Configuration);
@@ -57,8 +55,7 @@ namespace TestN1
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.CreateLogger("Info");
-
-            app.UseMiddleware<DataMiddleware>();
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

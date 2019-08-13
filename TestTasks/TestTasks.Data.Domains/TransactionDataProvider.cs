@@ -28,37 +28,19 @@ namespace TestTasks.Data.Domains
         /// <summary>
         /// Создание записи во временном хранилище
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="tr"></param>
         /// <returns></returns>
-        public async Task CreateAsync(string data)
+        public void Save(Transaction tr)
         {
             try
             {
-                await Task.Factory.StartNew(() =>
+                // Добавляем данные в коллекцию,
+                // предварительно проверив на сущестовавание с транзакции с таким Id
+                if (Transactions.Exists(a => a.Id == tr.Id))
                 {
-                    // Десериализуем строку в обьект
-                    object obj = JsonConvert.DeserializeObject(data);
-
-                    // Сравним десериализованный тип с моделями
-                    // если тип соответствует, пытаемся записать в коллекцию
-                    if (obj.GetType() == typeof(Transaction))
-                    {
-                        Transaction tr = (Transaction)obj;
-
-                        if (Transactions.Exists(a => a.Id == tr.Id))
-                        {
-                            throw new Exception($"Запись с таким Id уже существует.");
-                        }
-
-                        Transactions.Add(tr);
-                    }
-                    else
-                    {
-                        throw new Exception($"Объект типа {obj.GetType()} с таким Id уже существует.");
-                    }
-
-                });
-
+                    throw new Exception($"Запись с таким Id уже существует.");
+                }
+                Transactions.Add(tr);
             }
             catch (Exception exc)
             {
@@ -71,21 +53,17 @@ namespace TestTasks.Data.Domains
         /// </summary>/
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<Transaction> FindByIdAsync(int id)
+        public async Task<string> FindByIdAsync(int id)
         {
-            Transaction result = default(Transaction);
             try
             {
-                if (Transactions == null)
-                {
-                    throw new Exception($"Хранилище пусто.");
-                }
-
+                string result = string.Empty;
+                
                 await Task.Factory.StartNew(() =>
                 {
                     Transaction tr = Transactions.Find(a => a.Id == id);
 
-                    result = tr ?? throw new Exception($"Транзакция с Id {id} не существует.");
+                    result = tr == null ? $"Транзакция с Id {id} не существует." : JsonConvert.SerializeObject(tr);
                 });
 
                 return result;
