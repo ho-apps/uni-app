@@ -22,7 +22,7 @@ namespace TestN1.Infrastructure
                 context.Exception.Message);
 
 
-            ValidationProblemDetails problemDetails = new ValidationProblemDetails()
+            ValidationProblemDetails problemDetails = new ValidationProblemDetails
             {
                 Instance = context.HttpContext.Request.Path,
                 Status = StatusCodes.Status400BadRequest,

@@ -21,7 +21,11 @@ namespace TestTasks.Data.Domains
                 Entities = new List<Entity>();
             }
         }
-
+        /// <summary>
+        /// Создание записи в хранилище данных
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public async Task CreateAsync(string data)
         {
             try
@@ -29,27 +33,17 @@ namespace TestTasks.Data.Domains
                 await Task.Factory.StartNew(() =>
                     {
                         // Десериализуем строку в обьект
-                        object obj = JsonConvert.DeserializeObject(data);
+                        Entity obj = JsonConvert.DeserializeObject<Entity>(data);
 
-                        // Сравниваем тип десериализвоанного объекта с типом пригодным для записи в хранилище.
-                        if (obj.GetType() == typeof(Entity))
+                        // если запись с таким Id уже существует, выбрасываем исключение
+                        if (Entities.Exists(a => a.Id == obj.Id))
                         {
-                            // приводим объект к типу
-                            Entity ent = (Entity)obj;
-
-                            // если запись с таким Id уже существует, выбрасываем исключение
-                            if (Entities.Exists(a => a.Id == ent.Id))
-                            {
-                                throw new Exception($"Запись с таким Id уже существует.");
-                            }
-
-                            // иначе записываем во временное хранилище
-                            Entities.Add(ent);
+                            throw new Exception($"Запись с таким Id уже существует.");
                         }
-                        else
-                        {
-                            throw new Exception($"Запись в хранилище невозможна. Получен неизвестный тип объекта.");
-                        }
+
+                        // иначе записываем во временное хранилище
+                        Entities.Add(obj);
+
                     });
             }
             catch (Exception exc)

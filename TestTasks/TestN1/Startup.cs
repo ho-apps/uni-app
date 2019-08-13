@@ -60,10 +60,11 @@ namespace TestN1
             {
                 app.UseDeveloperExceptionPage();
             }
-
             app.UseCookiePolicy();
 
             app.UseSession();
+
+            //app.UseMvcWithDefaultRoute();
 
             app.UseMvc();
         }

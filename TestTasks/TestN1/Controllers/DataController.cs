@@ -6,6 +6,8 @@ using TestTasks.Data.Domains;
 
 namespace TestN1.Controllers
 {
+    [Route("/")]
+    [Produces("application/json")]
     [ApiController]
     public class DataController : ControllerBase
     {
@@ -15,6 +17,7 @@ namespace TestN1.Controllers
         {
             _dataProvider = dataProvider ?? throw new ArgumentNullException(nameof(dataProvider));
         }
+
         [HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -26,12 +29,15 @@ namespace TestN1.Controllers
 
             return Ok(res);
         }
-        [HttpPost]
+
+        [HttpGet]
+        [Route("insert")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public async Task PostAsync([FromQuery] string insert)
+        public async Task InsertAsync([FromQuery] string insert)
         {
-           await _dataProvider.CreateAsync(insert);
+            var str = insert;
+           await _dataProvider.CreateAsync(str);
         }
     }
 }
