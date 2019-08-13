@@ -37,29 +37,24 @@ namespace TestN2
 
                 Console.WriteLine(WelcomeStr);
 
-
-                while (true)
+                string userInput;
+                do
                 {
-                    string strLine = Console.ReadLine();
+                    userInput = UserInputData();
 
-                    if (ExitApp(strLine))
+                    if (userInput.Equals(_addStr))
                     {
-                        break;
+                        Add(userInput);
                     }
-                    else if (strLine.ToLowerInvariant().Equals(_addStr))
+                    if (userInput.Equals(_getStr))
                     {
-                        AddTransaction(strLine);
-                        break;
-                    }
-                   else if (strLine.ToLowerInvariant().Equals(_getStr))
-                    {
-
-                        FindTransation(strLine);
-                        break;
+                        Find(userInput);
                     }
 
+                } while (!userInput.Equals(_exitStr));
 
-                }
+                if (userInput.Equals(_exitStr))
+                    ExitApp();
 
                 Console.ReadLine();
             }
@@ -70,23 +65,29 @@ namespace TestN2
 
         }
 
-        private static bool ExitApp(string strLine)
+        private static string UserInputData()
         {
-            if (!strLine.ToLowerInvariant().Equals(_exitStr))
+            while (true)
             {
-                return true;
+                var result = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(result))
+                {
+                    return result;
+                }
+                Console.WriteLine("Введите команду");
             }
+        }
 
+        private static void ExitApp()
+        {
             Environment.Exit(0);
-
-            return false;
         }
 
         /// <summary>
-        /// Добавление транзакции
+        /// Добавление транзакции 
         /// </summary>
         /// <param name="strLine"></param>
-        private static bool AddTransaction(string strLine)
+        private static void Add(string strLine)
         {
             if (strLine.ToLowerInvariant().Equals(_addStr))
             {
@@ -127,18 +128,18 @@ namespace TestN2
                 _dataProvider.Save(tr);
 
                 Console.WriteLine(_okStr);
-                return true;
+
+                Console.WriteLine("Введите команду");
             }
-            return false;
+
         }
 
         /// <summary>
-        /// Поиск транзакции
+        /// Поиск транзакции 
         /// </summary>
         /// <param name="strLine"></param>
-        private static bool FindTransation(string strLine)
+        private static void Find(string strLine)
         {
-            bool result;
             if (strLine.ToLowerInvariant().Equals(_getStr))
             {
                 Console.WriteLine("Введите Id");
@@ -151,6 +152,7 @@ namespace TestN2
                     {
                         Console.WriteLine($"{res}");
                         Console.WriteLine(_okStr);
+                        Console.WriteLine("Введите команду");
                     }
                 }
                 else
@@ -158,14 +160,8 @@ namespace TestN2
                     _logger.LogError($"Обнаружен некорректный ввод данных");
                 }
 
-                result = true;
-            }
-            else
-            {
-                result = false;
             }
 
-            return result;
         }
 
         private static void ShowInfo()
