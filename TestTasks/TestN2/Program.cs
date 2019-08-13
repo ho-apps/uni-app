@@ -162,14 +162,6 @@ namespace TestN2
 
             }
 
-        }
-
-        private static void ShowInfo()
-        {
-            _logger.LogError($"Обнаружен некорректный ввод данных");
-
-            Console.WriteLine($"{Environment.NewLine}Команда не распознана.");
-            Console.WriteLine($"Повторите ввод команды{Environment.NewLine}");
-        }
+        }       
     }
 }
