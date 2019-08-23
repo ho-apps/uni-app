@@ -1,4 +1,4 @@
-<b>Тестовый проект для вакансии uni на backend-a</b>
+<b>Тестовый проект для вакансии backend-a</b>
 <br />
 <li><b>TestN1</b> - ASP.Net Core Web-API</ li>
 <br />
