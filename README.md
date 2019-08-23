@@ -1,6 +1,6 @@
 <b>Тестовый проект для вакансии uni на backend-a</b>
 <br />
-TestN2 - Консольное приложение
+<ul> TestN2 - Консольное приложение</ ul>
 <br />
 TestN1 - ASP.Net Core Web-API
 <br />
