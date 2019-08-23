@@ -1,8 +1,8 @@
 <b>Тестовый проект для вакансии uni на backend-a</b>
 <br />
-<li> TestN2 - Консольное приложение</ li>
+<li><b>TestN1</b> - ASP.Net Core Web-API</ li>
 <br />
-TestN1 - ASP.Net Core Web-API
+<li><b>TestN2</b> - Консольное приложение</ li>
 <br />
-TestTasks.Data.Domains - библиотека имитации слоя данных
+<li><b>TestTasks.Data.Domains</b> - библиотека имитации слоя данных</ li>
 <br />
