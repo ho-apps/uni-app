@@ -29,7 +29,7 @@ namespace TestN2
                     .AddTransient<TransactionDataProvider>()
                     .BuildServiceProvider();
 
-                // Получаем инстанс логгера и присваиваем
+                // Получаем экземпляр логгера и присваиваем
                 _logger = serviceProvider.GetService<ILogger<TransactionDataProvider>>();
 
                 // Инициализируем класс провайдера данных
