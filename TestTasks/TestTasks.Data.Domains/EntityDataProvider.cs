@@ -16,10 +16,7 @@ namespace TestTasks.Data.Domains
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            if (Entities == null)
-            {
-                Entities = new List<Entity>();
-            }
+            Entities = new();
         }
         /// <summary>
         /// Создание записи в хранилище данных
@@ -38,7 +35,7 @@ namespace TestTasks.Data.Domains
                         // если запись с таким Id уже существует, выбрасываем исключение
                         if (Entities.Exists(a => a.Id == obj.Id))
                         {
-                            throw new Exception($"Запись с таким Id уже существует.");
+                            throw new($"Запись с таким Id уже существует.");
                         }
 
                         // иначе записываем во временное хранилище
@@ -65,14 +62,14 @@ namespace TestTasks.Data.Domains
 
                 if (Entities == null)
                 {
-                    throw new Exception($"Хранилище пусто.");
+                    throw new($"Хранилище пусто.");
                 }
 
                 await Task.Factory.StartNew(() =>
                 {
-                    var ent = Entities.Find(a => a.Id.Equals(id));
+                    Entity ent = Entities.Find(a => a.Id.Equals(id));
 
-                    result = ent ?? throw new Exception($"Транзакция с Id {id} не существует.");
+                    result = ent ?? throw new($"Транзакция с Id {id} не существует.");
                 });
 
                 return result;

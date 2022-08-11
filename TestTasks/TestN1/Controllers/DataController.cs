@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TestTasks.Data.Domains;
+using TestTasks.Data.Domains.Models;
 
 namespace TestN1.Controllers
 {
@@ -25,7 +26,7 @@ namespace TestN1.Controllers
         {
             if (!Guid.TryParse(get, out Guid guid)) return BadRequest();
 
-            var res = await _dataProvider.FindByIdAsync(guid);
+            Entity res = await _dataProvider.FindByIdAsync(guid);
 
             return Ok(res);
         }
@@ -36,7 +37,7 @@ namespace TestN1.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task InsertAsync([FromQuery] string insert)
         {
-            var str = insert;
+            string str = insert;
            await _dataProvider.CreateAsync(str);
         }
     }

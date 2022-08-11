@@ -8,12 +8,13 @@ namespace TestN2
 {
     internal class Program
     {
-        private static string _getStr = "get";
-        private static string _addStr = "add";
-        private static string _exitStr = "exit";
-        private static string _okStr = "[OK]";
+        private static readonly string _getStr = "get";
+        private static readonly string _addStr = "add";
+        private static readonly string _exitStr = "exit";
+        private static readonly string _okStr = "[OK]";
 
-        static readonly string WelcomeStr = $"{Environment.NewLine}Для ввода данных используйте команду {_addStr},{Environment.NewLine}Для поиска транзакции по Id используйте команду {_getStr},{Environment.NewLine}Для завершения работы программы используйте команду {_exitStr}{Environment.NewLine}";
+        static readonly string WelcomeStr =
+            $"{Environment.NewLine}Для ввода данных используйте команду {_addStr},{Environment.NewLine}Для поиска транзакции по Id используйте команду {_getStr},{Environment.NewLine}Для завершения работы программы используйте команду {_exitStr}{Environment.NewLine}";
 
         private static ILogger<TransactionDataProvider> _logger;
         private static TransactionDataProvider _dataProvider;
@@ -23,7 +24,7 @@ namespace TestN2
             try
             {
                 // Инициализируем DI и конфигурируем логгер
-                var serviceProvider = new ServiceCollection()
+                ServiceProvider serviceProvider = new ServiceCollection()
                     .AddLogging(cfg => cfg.AddConsole())
                     .Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Information)
                     .AddTransient<TransactionDataProvider>()
@@ -69,7 +70,7 @@ namespace TestN2
         {
             while (true)
             {
-                var result = Console.ReadLine();
+                string result = Console.ReadLine();
                 if (!string.IsNullOrWhiteSpace(result))
                 {
                     return result;
@@ -91,7 +92,7 @@ namespace TestN2
         {
             if (strLine.ToLowerInvariant().Equals(_addStr))
             {
-                Transaction tr = new Transaction();
+                Transaction tr = new();
 
                 Console.WriteLine("Введите Id");
 
