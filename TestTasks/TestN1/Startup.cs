@@ -43,7 +43,7 @@ namespace TestN1
 
             });
             services.AddMvc(options => { options.Filters.Add(typeof(HttpServiceExceptionFilter)); })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddTransient<EntityDataProvider>();
             services.AddOptions();
@@ -52,11 +52,11 @@ namespace TestN1
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.CreateLogger("Info");
             
-            if (env.IsDevelopment())
+            if (env.EnvironmentName.Equals("Development"))
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -65,8 +65,8 @@ namespace TestN1
             app.UseSession();
 
             //app.UseMvcWithDefaultRoute();
-
-            app.UseMvc();
+            app.UseEndpoints(a => a.MapDefaultControllerRoute());
+            //app.UseMvc();
         }
     }
 }

@@ -22,7 +22,7 @@ namespace TestTasks.Data.Domains
         public TransactionDataProvider(ILogger<TransactionDataProvider> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            Transactions = new List<Transaction>();
+            Transactions = new();
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace TestTasks.Data.Domains
                 // предварительно проверив на сущестовавание с транзакции с таким Id
                 if (Transactions.Exists(a => a.Id == tr.Id))
                 {
-                    throw new Exception($"Запись с таким Id уже существует.");
+                    throw new($"Запись с таким Id уже существует.");
                 }
                 Transactions.Add(tr);
             }
