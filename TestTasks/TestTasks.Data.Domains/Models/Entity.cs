@@ -1,16 +1,14 @@
 ﻿using System;
 
-namespace TestTasks.Data.Domains.Models
+namespace TestTasks.Data.Domains.Models;
+
+public class Entity
 {
-    public class Entity
+    public Entity()
     {
-        public Guid Id { get; set; }
-        public DateTime OperationDate { get; set; }
-        public decimal Amount { get; set; }
-        public Entity()
-        {
-            Id = Guid.NewGuid();
-            OperationDate = DateTime.Now;
-        }
+        Id = Guid.NewGuid();
     }
+
+    public Guid Id { get; set; }
+    public decimal Amount { get; set; }
 }
