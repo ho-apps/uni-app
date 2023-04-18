@@ -1,168 +1,147 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 using TestTasks.Data.Domains;
 using TestTasks.Data.Domains.Models;
 
-namespace TestN2
+namespace TestN2;
+
+internal class Program
 {
-    internal class Program
+    private const string GetStr = "get";
+    private const string AddStr = "add";
+    private const string ExitStr = "exit";
+    private const string OkStr = "[OK]";
+
+    private static readonly string WelcomeStr =
+        $"{Environment.NewLine}Для ввода данных используйте команду {AddStr},{Environment.NewLine}Для поиска транзакции по Id используйте команду {GetStr},{Environment.NewLine}Для завершения работы программы используйте команду {ExitStr}{Environment.NewLine}";
+
+    private static ILogger<TransactionDataProvider> _logger;
+    private static TransactionDataProvider _dataProvider;
+
+    // ReSharper disable once UnusedParameter.Local
+    private static void Main(string[] args)
     {
-        private static readonly string _getStr = "get";
-        private static readonly string _addStr = "add";
-        private static readonly string _exitStr = "exit";
-        private static readonly string _okStr = "[OK]";
-
-        static readonly string WelcomeStr =
-            $"{Environment.NewLine}Для ввода данных используйте команду {_addStr},{Environment.NewLine}Для поиска транзакции по Id используйте команду {_getStr},{Environment.NewLine}Для завершения работы программы используйте команду {_exitStr}{Environment.NewLine}";
-
-        private static ILogger<TransactionDataProvider> _logger;
-        private static TransactionDataProvider _dataProvider;
-
-        static void Main(string[] args)
+        try
         {
-            try
+            // Инициализируем DI и конфигурируем логгер
+            var serviceProvider = new ServiceCollection()
+                .AddLogging(cfg => cfg.AddConsole())
+                .Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Information)
+                .AddTransient<TransactionDataProvider>()
+                .BuildServiceProvider();
+
+            // Получаем экземпляр логгера и присваиваем
+            _logger = serviceProvider.GetService<ILogger<TransactionDataProvider>>();
+
+            // Инициализируем класс провайдера данных
+            _dataProvider = serviceProvider.GetRequiredService<TransactionDataProvider>();
+
+            Console.WriteLine(WelcomeStr);
+
+            string userInput;
+            do
             {
-                // Инициализируем DI и конфигурируем логгер
-                ServiceProvider serviceProvider = new ServiceCollection()
-                    .AddLogging(cfg => cfg.AddConsole())
-                    .Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Information)
-                    .AddTransient<TransactionDataProvider>()
-                    .BuildServiceProvider();
+                userInput = UserInputData();
 
-                // Получаем экземпляр логгера и присваиваем
-                _logger = serviceProvider.GetService<ILogger<TransactionDataProvider>>();
-
-                // Инициализируем класс провайдера данных
-                _dataProvider = serviceProvider.GetRequiredService<TransactionDataProvider>();
-
-                Console.WriteLine(WelcomeStr);
-
-                string userInput;
-                do
+                switch (userInput)
                 {
-                    userInput = UserInputData();
-
-                    if (userInput.Equals(_addStr))
-                    {
+                    case AddStr:
                         Add(userInput);
-                    }
-                    if (userInput.Equals(_getStr))
-                    {
+                        break;
+                    case GetStr:
                         Find(userInput);
-                    }
+                        break;
+                }
+            } while (!userInput.Equals(ExitStr));
 
-                } while (!userInput.Equals(_exitStr));
+            if (userInput.Equals(ExitStr))
+                ExitApp();
 
-                if (userInput.Equals(_exitStr))
-                    ExitApp();
-
-                Console.ReadLine();
-            }
-            catch (Exception exc)
-            {
-                _logger.LogError($"{exc}");
-            }
-
+            Console.ReadLine();
         }
-
-        private static string UserInputData()
+        catch (Exception exc)
         {
-            while (true)
+            _logger.LogError($@"{exc}");
+        }
+    }
+
+    private static string UserInputData()
+    {
+        while (true)
+        {
+            var result = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(result)) return result;
+            Console.WriteLine("Введите команду");
+        }
+    }
+
+    private static void ExitApp()
+    {
+        Environment.Exit(0);
+    }
+
+    /// <summary>
+    ///     Добавление транзакции
+    /// </summary>
+    /// <param name="strLine"></param>
+    private static void Add(string strLine)
+    {
+        if (!strLine.ToLowerInvariant().Equals(AddStr)) return;
+        Transaction tr = new();
+
+        Console.WriteLine("Введите Id");
+
+        if (int.TryParse(Console.ReadLine(), out var trId))
+            tr.Id = trId;
+        else
+            _logger.LogError("Обнаружен некорректный ввод данных");
+
+        Console.WriteLine("Введите дату");
+
+        if (DateTime.TryParse(Console.ReadLine(), out var trDate))
+            tr.TransactionDate = trDate;
+        else
+            _logger.LogError("Обнаружен некорректный ввод данных");
+        Console.WriteLine("Введите сумму");
+
+        if (decimal.TryParse(Console.ReadLine(), out var trAmount))
+            tr.Amount = trAmount;
+        else
+            _logger.LogError("Обнаружен некорректный ввод данных");
+
+        _dataProvider.Save(tr);
+
+        Console.WriteLine(OkStr);
+
+        Console.WriteLine("Введите команду");
+    }
+
+    /// <summary>
+    ///     Поиск транзакции
+    /// </summary>
+    /// <param name="strLine"></param>
+    private static void Find(string strLine)
+    {
+        if (strLine.ToLowerInvariant().Equals(GetStr))
+        {
+            Console.WriteLine("Введите Id");
+
+            if (int.TryParse(Console.ReadLine(), out var trId))
             {
-                string result = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(result))
+                var res = _dataProvider.FindByIdAsync(trId).Result;
+
+                if (!string.IsNullOrWhiteSpace(res))
                 {
-                    return result;
+                    Console.WriteLine($"{res}");
+                    Console.WriteLine(OkStr);
+                    Console.WriteLine("Введите команду");
                 }
-                Console.WriteLine("Введите команду");
+            }
+            else
+            {
+                _logger.LogError("Обнаружен некорректный ввод данных");
             }
         }
-
-        private static void ExitApp()
-        {
-            Environment.Exit(0);
-        }
-
-        /// <summary>
-        /// Добавление транзакции 
-        /// </summary>
-        /// <param name="strLine"></param>
-        private static void Add(string strLine)
-        {
-            if (strLine.ToLowerInvariant().Equals(_addStr))
-            {
-                Transaction tr = new();
-
-                Console.WriteLine("Введите Id");
-
-                if (int.TryParse(Console.ReadLine(), out int trId))
-                {
-                    tr.Id = trId;
-                }
-                else
-                {
-                    _logger.LogError($"Обнаружен некорректный ввод данных");
-                }
-
-                Console.WriteLine("Введите дату");
-
-                if (DateTime.TryParse(Console.ReadLine(), out DateTime trDate))
-                {
-                    tr.TransactionDate = trDate;
-                }
-                else
-                {
-                    _logger.LogError($"Обнаружен некорректный ввод данных");
-                }
-                Console.WriteLine("Введите сумму");
-
-                if (decimal.TryParse(Console.ReadLine(), out decimal trAmount))
-                {
-                    tr.Amount = trAmount;
-                }
-                else
-                {
-                    _logger.LogError($"Обнаружен некорректный ввод данных");
-                }
-
-                _dataProvider.Save(tr);
-
-                Console.WriteLine(_okStr);
-
-                Console.WriteLine("Введите команду");
-            }
-
-        }
-
-        /// <summary>
-        /// Поиск транзакции 
-        /// </summary>
-        /// <param name="strLine"></param>
-        private static void Find(string strLine)
-        {
-            if (strLine.ToLowerInvariant().Equals(_getStr))
-            {
-                Console.WriteLine("Введите Id");
-
-                if (int.TryParse(Console.ReadLine(), out int trId))
-                {
-                    string res = _dataProvider.FindByIdAsync(trId).Result;
-
-                    if (!string.IsNullOrWhiteSpace(res))
-                    {
-                        Console.WriteLine($"{res}");
-                        Console.WriteLine(_okStr);
-                        Console.WriteLine("Введите команду");
-                    }
-                }
-                else
-                {
-                    _logger.LogError($"Обнаружен некорректный ввод данных");
-                }
-
-            }
-
-        }       
     }
 }

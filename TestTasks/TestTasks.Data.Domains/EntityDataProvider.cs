@@ -1,85 +1,79 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using TestTasks.Data.Domains.Models;
 
-namespace TestTasks.Data.Domains
+namespace TestTasks.Data.Domains;
+
+public class EntityDataProvider
 {
-    public class EntityDataProvider
+    private readonly ILogger<EntityDataProvider> _logger;
+
+    public EntityDataProvider(ILogger<EntityDataProvider> logger)
     {
-        private readonly ILogger<EntityDataProvider> _logger;
-        private List<Entity> Entities { get; set; }
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        public EntityDataProvider(ILogger<EntityDataProvider> logger)
+        Entities = new List<Entity>();
+    }
+
+    private List<Entity> Entities { get; }
+
+    /// <summary>
+    ///     Создание записи в хранилище данных
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public async Task CreateAsync(string data)
+    {
+        try
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            await Task.Factory.StartNew(() =>
+            {
+                // Десериализуем строку в обьект
+                var obj = JsonConvert.DeserializeObject<Entity>(data);
 
-            Entities = new();
+                // если запись с таким Id уже существует, выбрасываем исключение
+                if (Entities.Exists(a => a.Id == obj.Id)) throw new Exception("Запись с таким Id уже существует.");
+
+                // иначе записываем во временное хранилище
+                Entities.Add(obj);
+            });
         }
-        /// <summary>
-        /// Создание записи в хранилище данных
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public async Task CreateAsync(string data)
+        catch (Exception exc)
         {
-            try
-            {
-                await Task.Factory.StartNew(() =>
-                    {
-                        // Десериализуем строку в обьект
-                        Entity obj = JsonConvert.DeserializeObject<Entity>(data);
-
-                        // если запись с таким Id уже существует, выбрасываем исключение
-                        if (Entities.Exists(a => a.Id == obj.Id))
-                        {
-                            throw new($"Запись с таким Id уже существует.");
-                        }
-
-                        // иначе записываем во временное хранилище
-                        Entities.Add(obj);
-
-                    });
-            }
-            catch (Exception exc)
-            {
-                _logger.LogError($"{exc}");
-                throw;
-            }
+            _logger.LogError($"{exc}");
+            throw;
         }
-        /// <summary>
-        /// Поиск по id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<Entity> FindByIdAsync(Guid id)
+    }
+
+    /// <summary>
+    ///     Поиск по id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public async Task<Entity> FindByIdAsync(Guid id)
+    {
+        try
         {
-            try
+            var result = default(Entity);
+
+            if (Entities == null) throw new Exception("Хранилище пусто.");
+
+            await Task.Factory.StartNew(() =>
             {
-                Entity result = default(Entity);
+                var ent = Entities.Find(a => a.Id.Equals(id));
 
-                if (Entities == null)
-                {
-                    throw new($"Хранилище пусто.");
-                }
+                result = ent ?? throw new Exception($"Транзакция с Id {id} не существует.");
+            });
 
-                await Task.Factory.StartNew(() =>
-                {
-                    Entity ent = Entities.Find(a => a.Id.Equals(id));
-
-                    result = ent ?? throw new($"Транзакция с Id {id} не существует.");
-                });
-
-                return result;
-
-            }
-            catch (Exception exc)
-            {
-                _logger.LogError($"{exc}");
-                throw;
-            }
+            return result;
+        }
+        catch (Exception exc)
+        {
+            _logger.LogError($"{exc}");
+            throw;
         }
     }
 }
